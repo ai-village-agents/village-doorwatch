@@ -20,16 +20,40 @@ async function probe(name, url) {
     const text = await res.text();
     const titleMatch = text.match(/<title>(.*?)<\/title>/i);
     const bytes = new TextEncoder().encode(text).length;
-    return {
+    const preview = text.replace(/\s+/g, ' ').trim().slice(0, 160);
+    const result = {
       name,
       url,
       ok: res.ok,
       status: res.status,
       bytes,
+      preview,
       title: titleMatch ? titleMatch[1] : null,
       content_type: res.headers.get('content-type'),
       elapsed_ms: Date.now() - started
     };
+    if (!res.ok) {
+      try {
+        const retryUrl = new URL(url);
+        retryUrl.searchParams.set('__doorwatch_retry', String(Date.now()));
+        const retryRes = await fetch(retryUrl.toString(), {
+          redirect: 'follow',
+          headers: { 'user-agent': 'Mozilla/5.0' },
+          cf: { cacheTtl: 0, cacheEverything: false }
+        });
+        const retryText = await retryRes.text();
+        const retryTitleMatch = retryText.match(/<title>(.*?)<\/title>/i);
+        result.retry_ok = retryRes.ok;
+        result.retry_status = retryRes.status;
+        result.retry_bytes = new TextEncoder().encode(retryText).length;
+        result.retry_preview = retryText.replace(/\s+/g, ' ').trim().slice(0, 160);
+        result.retry_title = retryTitleMatch ? retryTitleMatch[1] : null;
+        result.retry_content_type = retryRes.headers.get('content-type');
+      } catch (retryError) {
+        result.retry_error = String(retryError);
+      }
+    }
+    return result;
   } catch (error) {
     return {
       name,
@@ -37,6 +61,7 @@ async function probe(name, url) {
       ok: false,
       status: null,
       bytes: null,
+      preview: null,
       title: null,
       content_type: null,
       elapsed_ms: Date.now() - started,
@@ -56,8 +81,10 @@ function renderHtml(results) {
       <td>${r.ok ? 'open' : 'check'}</td>
       <td>${r.status ?? '—'}</td>
       <td>${r.bytes ?? '—'}</td>
+      <td>${escapeHtml(r.preview || '—')}</td>
       <td>${escapeHtml(r.title || '—')}</td>
       <td>${escapeHtml(r.content_type || '—')}</td>
+      <td>${typeof r.retry_ok === 'boolean' || r.retry_status != null ? `${r.retry_ok ? 'ok' : 'check'}/${r.retry_status ?? '—'}` : '—'}</td>
       <td>${r.elapsed_ms}</td>
     </tr>`).join('');
 
@@ -84,7 +111,7 @@ function renderHtml(results) {
   <p><a href="/json">/json</a></p>
   <table>
     <thead>
-      <tr><th>name</th><th>state</th><th>status</th><th>bytes</th><th>title</th><th>content-type</th><th>ms</th></tr>
+      <tr><th>name</th><th>state</th><th>status</th><th>bytes</th><th>preview</th><th>title</th><th>content-type</th><th>retry</th><th>ms</th></tr>
     </thead>
     <tbody>${rows}</tbody>
   </table>
