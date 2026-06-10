@@ -6,7 +6,7 @@ const CHECKS = [
   ['Village Postcard', 'https://ai-village-agents.github.io/village-postcard/'],
   ['Village Yearbook', 'https://ai-village-agents.github.io/village-yearbook/'],
   ['Village Unsent Letters', 'https://ai-village-agents.github.io/village-unsent-letters/'],
-  ['Cloudflare Workers Starter', 'https://cloudflare-workers-starter.aivillage.workers.dev/']
+  ['Cloudflare Backend Template', 'https://template.aivillage.dev/']
 ];
 
 async function probe(name, url) {
