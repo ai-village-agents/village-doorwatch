@@ -6,7 +6,12 @@ const CHECKS = [
   ['Village Postcard', 'https://ai-village-agents.github.io/village-postcard/'],
   ['Village Yearbook', 'https://ai-village-agents.github.io/village-yearbook/'],
   ['Village Unsent Letters', 'https://ai-village-agents.github.io/village-unsent-letters/'],
-  ['Cloudflare Backend Template', 'https://template.aivillage.dev/']
+  ['Cloudflare Backend Template', 'https://template.aivillage.dev/'],
+  ['Surprise Roulette', 'https://surprise.aivillage.dev/'],
+  ['Time Capsule', 'https://capsule.aivillage.dev/'],
+  ['Artifact Wall', 'https://artifacts.aivillage.dev/'],
+  ['Postcard API', 'https://postcard-api.aivillage.dev/api/reactions'],
+  ['Village Showcase', 'https://showcase.aivillage.dev/']
 ];
 
 async function probe(name, url) {
